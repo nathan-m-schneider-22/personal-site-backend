@@ -1,35 +1,32 @@
-// server.js
 
-// BASE SETUP
-// =============================================================================
-
-// call the packages we need
-var express    = require('express');        // call express
-var app        = express();                 // define our app using express
+var express    = require('express');        
+var app        = express();                
 var bodyParser = require('body-parser');
 require('dotenv').config()
 var request = require("request");
 const cors = require('cors');
+const { default: axios } = require('axios');
+const { head } = require('request');
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST
+
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.enable('trust proxy')
 app.use(cors())
 
-var port = process.env.PORT || 9090;        // set our port
+var port = process.env.PORT || 9090;        
 
-// ROUTES FOR OUR API
-// =============================================================================
-var router = express.Router();              // get an instance of the express Router
+
+
+var router = express.Router();              
 const accountSid = process.env.SID;
 const authToken = process.env.TOKEN;
 const client = require('twilio')(accountSid, authToken);
 const twilioNumber = process.env.TWILIO
 const targetNumber = process.env.TARGET
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
+
 router.get('/', function(req, res) {
     console.log(req.ip)
     console.log(req.headers['x-forwarded-for'])
@@ -52,7 +49,6 @@ router.get('/', function(req, res) {
     res.status(404).send("404 Page Not Found")   
 });
 
-// more routes for our API will happen here
 
 router.post('/report', function(req, res) {
     console.log(req.body)
@@ -75,11 +71,37 @@ router.post('/report', function(req, res) {
     res.status(200).send("ip")   
 });
 
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
+
+router.post('/question', function(req, res) {
+    console.log(req.body)
+    let query = req.body.query.trim()
+    const filename = "file-djCM7uennenItAHwgK1XOpIe"
+    const url = "https://api.openai.com/v1/answers"
+    var header = {'Authorization': "Bearer " + process.env.OPENAIKEY,'Content-Type': "application/json"};
+    data = {
+        search_model:"ada",
+        model:"davinci",
+        question:query,
+        file:filename,
+        examples_context:"In 2017, U.S. life expectancy was 78.6 years.",
+        examples:[["What is human life expectancy in the United States?", "78 years."]],
+        max_rerank:10,
+        max_tokens:40,
+        stop:["\n", "<|endoftext|>"]
+    }
+    if (query.length > 150) res.status(400).send("Query too long")
+    axios.post(url,data,{headers:header}).then((response) => {
+        console.log(response.data)
+        res.status(200).send({response:response.data.answers[0]})
+    }).catch((e) => {
+        console.log(e)
+        res.status(500).send({response:"Sorry, I don't know"})
+    })
+});
+
+
 app.use('/', router);
 
-// START THE SERVER
-// =============================================================================
+
 app.listen(port);
 console.log('Magic happens on port ' + port);
