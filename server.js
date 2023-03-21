@@ -35,14 +35,15 @@ router.get('/', function(req, res) {
         console.log(response.body)
         console.log(body)
 
-        client.messages
-        .create({
-            body: body,
-            from: twilioNumber,
-            to: targetNumber
-        })
-        .then(message => console.log("sent"));
-    
+        // client.messages
+        // .create({
+        //     body: body,
+        //     from: twilioNumber,
+        //     to: targetNumber
+        // })
+        // .then(message => console.log("sent"));
+        // res.status(500).send("NOT SENDING to phone")   
+
     });
 
 
@@ -58,17 +59,18 @@ router.post('/report', function(req, res) {
         console.log(response.body)
         console.log(body)
 
-        client.messages
-        .create({
-            body: body,
-            from: twilioNumber,
-            to: targetNumber
-        })
-        .then(message => console.log("sent"));
+        // client.messages
+        // .create({
+        //     body: body,
+        //     from: twilioNumber,
+        //     to: targetNumber
+        // })
+        // .then(message => console.log("sent"));
+        // res.status(500).send("NOT SENDING to phone")   
     });
 
 
-    res.status(200).send("ip")   
+    res.status(500).send("ip")   
 });
 
 
